@@ -1,1 +1,1 @@
-# cloudgit
+<a href="https://signin.aws.amazon.com/signup?request_type=register">AWS 계정 생성 및 활성화</a>
