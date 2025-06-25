@@ -2,10 +2,9 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY    = "docker.io/yourdockerid"
-        IMAGE_NAME  = "myapp"
-        IMAGE_TAG   = "${BUILD_NUMBER}"
-        KUBE_DEPLOY_PATH = "k8s/deployment.yaml"
+        IMAGE_NAME  = "docker.io/yourdockerid/myapp"
+        IMAGE_TAG   = "3"  // 또는 "${BUILD_NUMBER}"로 자동화 가능
+        DEPLOY_FILE = "k8s/deployment.yaml"
     }
 
     stages {
@@ -15,31 +14,19 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Update Deployment File') {
             steps {
-                script {
-                    sh "docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG ."
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'DOCKER_PASS')]) {
-                    sh "echo $DOCKER_PASS | docker login -u yourdockerid --password-stdin"
-                }
-                sh "docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
+                // 이미지 태그를 yaml에 반영
+                sh """
+                  sed -i 's|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' ${DEPLOY_FILE}
+                """
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                // 이미지 태그를 배포 yaml에 반영 (단순 치환 예시)
-                sh "sed -i 's|image: .*\$|image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}|' ${KUBE_DEPLOY_PATH}"
-
-                // 실제 배포
                 withKubeConfig([credentialsId: 'kubeconfig-jenkins']) {
-                    sh "kubectl apply -f $KUBE_DEPLOY_PATH"
+                    sh "kubectl apply -f ${DEPLOY_FILE}"
                 }
             }
         }
