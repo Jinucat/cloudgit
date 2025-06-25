@@ -35,7 +35,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 // 이미지 태그를 배포 yaml에 반영 (단순 치환 예시)
-                sh "sed -i 's|image: .*$|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|' $KUBE_DEPLOY_PATH"
+                sh "sed -i 's|image: .*\$|image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}|' ${KUBE_DEPLOY_PATH}"
 
                 // 실제 배포
                 withKubeConfig([credentialsId: 'kubeconfig-jenkins']) {
