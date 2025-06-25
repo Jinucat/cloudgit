@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME  = "docker.io/jinucat/cloudgit"
-        IMAGE_TAG   = "latest"  // 또는 BUILD_NUMBER 등으로 교체 가능
+        IMAGE_TAG   = "latest"
         DEPLOY_FILE = "deployment.yaml"
     }
 
@@ -16,10 +16,7 @@ pipeline {
 
         stage('Update Deployment File') {
             steps {
-                // image: ... 줄을 현재 태그로 치환
-                sh """
-                  sed -i 's|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' ${DEPLOY_FILE}
-                """
+                sh "sed -i 's|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' ${DEPLOY_FILE}"
             }
         }
 
